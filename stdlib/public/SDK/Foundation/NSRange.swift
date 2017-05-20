@@ -148,14 +148,13 @@ extension NSRange {
     self = NSRange(location: start, length: end - start)
   }
   
-  public init<R: RangeExpression, S: StringProtocol>(_ rangeExpression: R, in string: S)
-  where R.Bound == String.Index, S.Index == String.Index {
-    let range = rangeExpression.relative(to: string)
-    let start = range.lowerBound.samePosition(in: string.utf16)
-    let end = range.upperBound.samePosition(in: string.utf16)
-    let location = string.utf16.distance(from: string.utf16.startIndex, to: start)
-    let length = string.utf16.distance(from: start, to: end)
-    self = NSRange(location: location, length: length)
+  public init<R: RangeExpression, S: StringProtocol>(_ region: R, in target: S)
+  where R.Bound == S.Index, S.Index == String.Index {
+    let r = region.relative(to: target)
+    self = NSRange(
+      location: r.lowerBound.encodedOffset - target.startIndex.encodedOffset,
+      length: r.upperBound.encodedOffset - r.lowerBound.encodedOffset
+    )
   }
 
   @available(swift, deprecated: 4, renamed: "Range.init(_:)")
